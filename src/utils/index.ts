@@ -20,68 +20,42 @@ export function buildFormHtml(products: any[]) {
     .join('')}\n      </div>\n\n      <div class="flex gap-2">\n        <button type="button" id="exportBtn" class="flex-1 px-3 py-2 bg-indigo-600 text-white rounded">Exportar CSV</button>\n        <button type="button" id="copyBtn" class="px-3 py-2 bg-gray-100 text-gray-700 rounded">Copiar JSON</button>\n      </div>\n    </form>\n    `
 }
 
-export async function handleInjectionInit() {
-  const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
-  const activeTab = tabs && tabs[0]
+export async function showResults(resultEl: HTMLElement | null, products: any[]) {
+  
+  if (resultEl) resultEl.innerHTML = buildFormHtml(products)
 
-  if (!activeTab || typeof activeTab.id !== 'number') {
-    console.error('No active tab with numeric id found. Aborting script injection.')
-    return
+  // Attach action handlers
+  const exportBtn = document.getElementById('exportBtn')
+  const copyBtn = document.getElementById('copyBtn')
+
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      const checked = Array.from(document.querySelectorAll('input[name=selected]:checked')).map(el => products[Number((el as HTMLInputElement).value)])
+      const rows = checked.length ? checked : products
+      const csv = rows.map(r => [r.marca, r.nombreArticulo, r.quienComercializa, r.precioArticulo, r.descuento].map(v => '"' + String(v || '').replace(/"/g, '""') + '"').join(',')).join('\n')
+      const csvContent = 'Marca,Nombre,Comercializa,Precio,Descuento\n' + csv
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'productos.csv'
+      a.click()
+      URL.revokeObjectURL(url)
+    })
   }
 
-  chrome.scripting.executeScript({
-    target: { tabId: activeTab.id },
-    func: () => {
-      console.log('Scraping Falabella products...')
-      const nodeList = document.querySelectorAll('[data-testid=ssr-pod]')
-      const datos = Array.from(nodeList)
-      let productos = datos.map((producto: Element) => {
-        const [marca, nombreArticulo, quienComercializa, precioArticulo, descuento] = (producto as HTMLElement).innerText.split('\n')
-        return { marca, nombreArticulo, quienComercializa, precioArticulo, descuento }
-      })
-      return productos
-    }
-  }).then((injectionResults) => {
-    for (const frameResult of injectionResults) {
-      const products = (frameResult as any).result || []
-      const resultEl = document.getElementById('result')
-      if (resultEl) resultEl.innerHTML = buildFormHtml(products)
-
-      // Attach action handlers
-      const exportBtn = document.getElementById('exportBtn')
-      const copyBtn = document.getElementById('copyBtn')
-
-      if (exportBtn) {
-        exportBtn.addEventListener('click', () => {
-          const checked = Array.from(document.querySelectorAll('input[name=selected]:checked')).map(el => products[Number((el as HTMLInputElement).value)])
-          const rows = checked.length ? checked : products
-          const csv = rows.map(r => [r.marca, r.nombreArticulo, r.quienComercializa, r.precioArticulo, r.descuento].map(v => '"' + String(v || '').replace(/"/g, '""') + '"').join(',')).join('\n')
-          const csvContent = 'Marca,Nombre,Comercializa,Precio,Descuento\n' + csv
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-          const url = URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.href = url
-          a.download = 'productos.csv'
-          a.click()
-          URL.revokeObjectURL(url)
-        })
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const checked = Array.from(document.querySelectorAll('input[name=selected]:checked')).map(el => products[Number((el as HTMLInputElement).value)])
+      const toCopy = checked.length ? checked : products
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(toCopy, null, 2))
+        if (copyBtn) copyBtn.textContent = 'Copiado ✓'
+        setTimeout(() => { if (copyBtn) copyBtn.textContent = 'Copiar JSON' }, 1500)
+      } catch (err) {
+        console.error('No se pudo copiar', err)
       }
-
-      if (copyBtn) {
-        copyBtn.addEventListener('click', async () => {
-          const checked = Array.from(document.querySelectorAll('input[name=selected]:checked')).map(el => products[Number((el as HTMLInputElement).value)])
-          const toCopy = checked.length ? checked : products
-          try {
-            await navigator.clipboard.writeText(JSON.stringify(toCopy, null, 2))
-            if (copyBtn) copyBtn.textContent = 'Copiado ✓'
-            setTimeout(() => { if (copyBtn) copyBtn.textContent = 'Copiar JSON' }, 1500)
-          } catch (err) {
-            console.error('No se pudo copiar', err)
-          }
-        })
-      }
-    }
-  })
+    })
+  }
 }
 
-export function noop() {}

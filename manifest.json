@@ -3,5 +3,18 @@
   "name": "Scraping de falabella",
   "version": "1.0",
   "description": "Resumen de productos de falabella",
-  "permissions": ["scripting", "activeTab"]
+  "permissions": ["scripting", "activeTab"],
+  "action": {
+    "default_popup": "src/popup/popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.falabella.com.pe/*"],
+      "js": ["content/falabella.js"]
+    },
+    {
+      "matches": ["https://www.mercadolibre.com.pe/*"],
+      "js": ["content/mercadoLibre.js"]
+    }
+  ]
 }
