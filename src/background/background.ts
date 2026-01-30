@@ -20,12 +20,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .then(async (res) => {
         let text = null
         try { text = await res.text() } catch (e) {}
-        console.log('Posted scraped data, status=', res.status)
+        console.log('Posted scraped data, status=', res.status, 'url=', url)
+        console.log('Response body:', text)
         sendResponse({ ok: res.ok, status: res.status, body: text })
       })
       .catch((err) => {
-        console.error('Error posting scraped data:', err)
-        sendResponse({ ok: false, error: String(err) })
+        console.error('Error posting scraped data to', url)
+        console.error('Error message:', err.message)
+        console.error('Error type:', err.name)
+        console.error('Full error:', err)
+        sendResponse({ ok: false, error: String(err), message: err.message, type: err.name })
       })
 
     // Keep the message channel open for async response
