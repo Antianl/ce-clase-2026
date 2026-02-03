@@ -17,7 +17,7 @@ export function buildFormHtml(products: any[]) {
     .map(
       (p, i) => `\n          <label class="flex items-start gap-3 p-3 bg-white rounded shadow-sm hover:bg-gray-50">\n            <input type="checkbox" name="selected" value="${i}" class="mt-1 h-4 w-4 text-indigo-600 border-gray-300 rounded" />\n            <div class="flex-1">\n              <div class="font-semibold text-sm text-gray-800">${escapeHtml(p.nombreArticulo) || '—'}</div>\n              <div class="text-xs text-gray-500">${escapeHtml(p.marca) || ''} • ${escapeHtml(p.precioArticulo) || ''}</div>\n              ${p.descuento ? `<div class="text-xs text-green-600 font-medium">${escapeHtml(p.descuento)}</div>` : ''}\n            </div>\n          </label>`
     )
-    .join('')}\n      </div>\n\n      <div class="flex gap-2">\n        <button type="button" id="exportBtn" class="flex-1 px-3 py-2 bg-indigo-600 text-white rounded">Exportar CSV</button>\n        <button type="button" id="copyBtn" class="px-3 py-2 bg-gray-100 text-gray-700 rounded">Copiar JSON</button>\n      </div>\n    </form>\n    `
+    .join('')}\n      </div>\n\n      <div class="flex gap-2">\n        <button type="button" id="exportBtn" class="flex-1 px-3 py-2 bg-indigo-600 text-white rounded">Exportar CSV (${products.length})</button>\n        <button type="button" id="copyBtn" class="px-3 py-2 bg-gray-100 text-gray-700 rounded">Copiar JSON</button>\n      </div>\n    </form>\n    `
 }
 
 export async function showResults(resultEl: HTMLElement | null, products: any[]) {
@@ -57,5 +57,23 @@ export async function showResults(resultEl: HTMLElement | null, products: any[])
       }
     })
   }
+}
+
+export async function scrollToBottom(doc: Document): Promise<void> {
+  const scrollHeight = doc.documentElement.scrollHeight
+  const clientHeight = doc.documentElement.clientHeight
+  let currentScroll = 0
+
+  return new Promise((resolve) => {
+    const interval = setInterval(() => {
+      doc.documentElement.scrollBy(0, 500)
+      currentScroll += 500
+
+      if (currentScroll >= scrollHeight - clientHeight) {
+        clearInterval(interval)
+        resolve()
+      }
+    }, 1000)
+  })
 }
 
