@@ -32,8 +32,8 @@ export async function showResults(resultEl: HTMLElement | null, products: any[])
     exportBtn.addEventListener('click', () => {
       const checked = Array.from(document.querySelectorAll('input[name=selected]:checked')).map(el => products[Number((el as HTMLInputElement).value)])
       const rows = checked.length ? checked : products
-      const csv = rows.map(r => [r.marca, r.nombreArticulo, r.quienComercializa, r.precioArticulo, r.descuento].map(v => '"' + String(v || '').replace(/"/g, '""') + '"').join(',')).join('\n')
-      const csvContent = 'Marca,Nombre,Comercializa,Precio,Descuento\n' + csv
+      const csv = rows.map(r => [r.pagina, r.marca, r.nombreArticulo, r.quienComercializa, r.precioArticulo, r.descuento].map(v => '"' + String(v || '').replace(/"/g, '""') + '"').join(',')).join('\n')
+      const csvContent = 'pagina, Marca,Nombre,Comercializa,Precio,Descuento\n' + csv
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -73,7 +73,15 @@ export async function scrollToBottom(doc: Document): Promise<void> {
         clearInterval(interval)
         resolve()
       }
-    }, 1000)
+    }, 500)
+  })
+}
+
+export async function waitSeconds(seconds: number): Promise<void> {
+  return new Promise((resolve) => {
+    setInterval(() => {
+        resolve()
+    }, seconds*1000)
   })
 }
 
