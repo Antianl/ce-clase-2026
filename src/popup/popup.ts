@@ -16,7 +16,7 @@ async function init() {
 
     // Request content script to scrape current page. Content script must listen for {type: 'scrape'}
     const response: any = await new Promise((resolve) => {
-        chrome.tabs.sendMessage(activeTab.id, { type: 'scrape' }, (res) => {
+        chrome.tabs.sendMessage(activeTab.id as number, { type: 'scrape' }, (res) => {
         resolve(res)
         })
     })
