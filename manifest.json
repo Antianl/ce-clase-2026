@@ -14,7 +14,7 @@
       "js": ["content/falabella.js"]
     },
     {
-      "matches": ["https://www.mercadolibre.com.pe/*"],
+      "matches": ["https://*.mercadolibre.com.pe/*"],
       "js": ["content/mercadoLibre.js"]
     }
   ]
