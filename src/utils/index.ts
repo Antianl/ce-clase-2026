@@ -21,7 +21,7 @@ export function buildFormHtml(products: any[]) {
 }
 
 export async function showResults(resultEl: HTMLElement | null, products: any[]) {
-  
+
   if (resultEl) resultEl.innerHTML = buildFormHtml(products)
 
   // Attach action handlers
