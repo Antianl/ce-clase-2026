@@ -8,10 +8,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const nodeList = document.querySelectorAll('[data-testid=ssr-pod]')
       const datos = Array.from(nodeList)
       const productos = datos.map((producto: Element) => {
-        const text = (producto as HTMLElement).innerText || ''
-        const [marca, nombreArticulo, quienComercializa, precioArticulo, descuento] = text.split('\n')
-        return { marca, nombreArticulo, quienComercializa, precioArticulo, descuento }
-      })
+        // Usamos querySelector dentro de cada 'producto' para buscar clases específicas
+        const marca = producto.querySelector('.pod-title')?.textContent?.trim() || '';
+        const nombreArticulo = producto.querySelector('.pod-subTitle')?.textContent?.trim() || '';
+        const quienComercializa = producto.querySelector('.pod-sellerText')?.textContent?.trim() || '';
+
+        // El precio suele estar en la primera posición de la lista de precios
+        const precioArticulo = producto.querySelector('.prices-0 span')?.textContent?.trim() || '';
+
+        // El descuento tiene su propia clase de badge
+        const descuento = producto.querySelector('.discount-badge-item')?.textContent?.trim() || '';
+
+        return { marca, nombreArticulo, quienComercializa, precioArticulo, descuento };
+      });
 
       // Reply to the popup (synchronous response)
       sendResponse({ result: productos })
